@@ -70,7 +70,6 @@ export async function imageOptimizer(
     if (url.startsWith('/') && imageData.isLocal) {
       url = `${parsedUrl.protocol}//${parsedUrl.host}/${url}`
     }
-
     try {
       hrefParsed = new URL(url)
       href = hrefParsed.toString()
