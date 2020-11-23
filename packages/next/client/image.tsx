@@ -65,8 +65,10 @@ const {
   loader: configLoader,
   path: configPath,
   domains: configDomains,
-} =
-  ((process.env.__NEXT_IMAGE_OPTS as any) as ImageConfig) || imageConfigDefault
+} = {
+  ...imageConfigDefault,
+  ...(((process.env.__NEXT_IMAGE_OPTS as any) || {}) as ImageConfig),
+}
 // sort smallest to largest
 const allSizes = [...configDeviceSizes, ...configImageSizes]
 configDeviceSizes.sort((a, b) => a - b)

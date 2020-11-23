@@ -32,7 +32,10 @@ export async function imageOptimizer(
   parsedUrl: UrlWithParsedQuery
 ) {
   const { nextConfig, distDir } = server
-  const imageData: ImageConfig = nextConfig.images || imageConfigDefault
+  const imageData: ImageConfig = {
+    ...imageConfigDefault,
+    ...(nextConfig.images || {}),
+  }
   const { deviceSizes = [], imageSizes = [], domains = [], loader } = imageData
   const sizes = [...deviceSizes, ...imageSizes]
 
@@ -42,7 +45,7 @@ export async function imageOptimizer(
   }
 
   const { headers } = req
-  const { url, w, q } = parsedUrl.query
+  let { url, w, q } = parsedUrl.query
   const mimeType = getSupportedMimeType(MODERN_TYPES, headers.accept)
   let href: string
 
@@ -58,11 +61,15 @@ export async function imageOptimizer(
 
   let isAbsolute: boolean
 
-  if (url.startsWith('/')) {
+  if (url.startsWith('/') && !imageData.isLocal) {
     href = url
     isAbsolute = false
   } else {
     let hrefParsed: URL
+
+    if (url.startsWith('/') && imageData.isLocal) {
+      url = `${parsedUrl.protocol}//${parsedUrl.host}/${url}`
+    }
 
     try {
       hrefParsed = new URL(url)
@@ -80,7 +87,7 @@ export async function imageOptimizer(
       return { finished: true }
     }
 
-    if (!domains.includes(hrefParsed.hostname)) {
+    if (!domains.includes(hrefParsed.hostname) && !imageData.isLocal) {
       res.statusCode = 400
       res.end('"url" parameter is not allowed')
       return { finished: true }
