@@ -120,6 +120,30 @@ describe('Custom Server', () => {
     })
   })
 
+  describe('Image optimizer with isLocal set to true', () => {
+    let output
+
+    const handleOutput = (msg) => {
+      output += msg
+    }
+    beforeAll(() =>
+      startServer(
+        {},
+        {
+          onStdout: handleOutput,
+          onStderr: handleOutput,
+        }
+      )
+    )
+    afterAll(() => killApp(server))
+
+    it('should render the valid Image usage and not print error', async () => {
+      const html = await renderViaHTTP(appPort, '/local-image', {})
+      expect(html).toMatch(/This is valid usage of the Image component/)
+      expect(output).not.toMatch(/Error/)
+    })
+  })
+
   describe('HMR with custom server', () => {
     beforeAll(() => startServer())
     afterAll(() => {

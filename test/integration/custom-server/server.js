@@ -1,5 +1,7 @@
 const http = require('http')
 const next = require('next')
+const fs = require('fs')
+const path = require('path')
 
 const dev = process.env.NODE_ENV !== 'production'
 const dir = __dirname
@@ -32,8 +34,16 @@ app.prepare().then(() => {
       return app.render(req, res, '/dashboard')
     }
 
-    if (/static\/hello\.text/.test(req.url)) {
-      return app.render(req, res, '/static/hello.text')
+    if (/local-image/.test(req.url)) {
+      return app.render(req, res, '/local-image')
+    }
+
+    if (/static\/hello\.txt/.test(req.url)) {
+      return app.render(req, res, '/static/hello.txt')
+    }
+
+    if (/uploads\/logo\.svg/.test(req.url)) {
+      return renderFile(req, res, 'uploads/logo.svg')
     }
 
     if (/no-slash/.test(req.url)) {
@@ -55,3 +65,16 @@ app.prepare().then(() => {
     console.log(`> Ready on http://localhost:${port}`)
   })
 })
+
+function renderFile(_req, res, pathname) {
+  const filePath = path.join(__dirname, pathname)
+  const stat = fs.statSync(filePath)
+
+  res.writeHead(200, {
+    'Content-Type': 'image/svg+xml',
+    'Content-Length': stat.size,
+  })
+
+  const readStream = fs.createReadStream(filePath)
+  readStream.pipe(res)
+}
